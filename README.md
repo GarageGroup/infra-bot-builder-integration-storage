@@ -1,0 +1,1 @@
+# infra-bot-builder-integration-cosmosdb
