@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using static System.FormattableString;
 
 namespace GGroupp.Infra.Bot.Builder;
 
@@ -42,15 +43,19 @@ partial class CosmosStorage
 
     private async Task InnerWriteItemAsync(string key, object value, CancellationToken cancellationToken)
     {
-        var document = JObject.FromObject(value, jsonSerializer);
-        var storageItem = new StorageItemJsonWrite(id: key.EscapeKey(), sourceId: key, document: document);
+        var (containerId, containerType, itemId) = key.ParseKey();
 
-        var containerId = GetContainerId(key);
-        var resourceIdUpdate = Invariant($"dbs/{databaseId}/colls/{containerId}/docs/{storageItem.Id}");
-
-        using var clientUpdate = CreateHttpClient(verb: "PUT", resourceId: resourceIdUpdate, escapedKey: storageItem.Id);
+        var jValue = JObject.FromObject(value, jsonSerializer);
+        var storageItem = new StorageItemJsonWrite(id: itemId, key: key, value: jValue);
 
         using var content = CreateJsonContent(storageItem);
+        var resourceIdUpdate = $"dbs/{databaseId}/colls/{containerId}/docs/{itemId}";
+
+        using var clientUpdate = CreateHttpClient(
+            verb: "PUT",
+            resourceId: resourceIdUpdate,
+            resourceType: ItemResourceType,
+            escapedKey: itemId);
 
         var responseUpdate = await clientUpdate.PutAsync(resourceIdUpdate, content, cancellationToken).ConfigureAwait(false);
         if (responseUpdate.IsSuccessStatusCode)
@@ -63,13 +68,57 @@ partial class CosmosStorage
             throw await CreateUnexpectedStatusCodeExceptonAsync(responseUpdate, cancellationToken).ConfigureAwait(false);
         }
 
-        var resourceIdCreate = Invariant($"dbs/{databaseId}/colls/{containerId}");
-        using var clientCreate = CreateHttpClient(verb: "POST", resourceId: resourceIdCreate, escapedKey: storageItem.Id);
+        if (HasContainerExisted(responseUpdate) is false)
+        {
+            var containerTtlSeconds = GetTtlSeconds(containerType);
+            await InnerCreateContainer(containerId, containerTtlSeconds, cancellationToken).ConfigureAwait(false);
+        }
+
+        var resourceIdCreate = $"dbs/{databaseId}/colls/{containerId}";
+        using var clientCreate = CreateHttpClient(
+            verb: "POST",
+            resourceId: resourceIdCreate,
+            resourceType: ItemResourceType,
+            escapedKey: itemId);
 
         var responseCreate = await clientCreate.PostAsync(resourceIdCreate + "/docs", content, cancellationToken).ConfigureAwait(false);
-        if (responseCreate.IsSuccessStatusCode is false)
+        if (responseCreate.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        if (responseCreate.StatusCode is not HttpStatusCode.Conflict)
         {
             throw await CreateUnexpectedStatusCodeExceptonAsync(responseCreate, cancellationToken).ConfigureAwait(false);
+        }
+
+        var responseSecondUpdate = await clientUpdate.PutAsync(resourceIdUpdate, content, cancellationToken).ConfigureAwait(false);
+        if (responseSecondUpdate.IsSuccessStatusCode is false)
+        {
+            throw await CreateUnexpectedStatusCodeExceptonAsync(responseSecondUpdate, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static bool HasContainerExisted(HttpResponseMessage response)
+        =>
+        response.Headers.TryGetValues("x-ms-documentdb-partitionkeyrangeid", out var values) && values.Any(v => string.IsNullOrEmpty(v) is false);
+
+    private async Task InnerCreateContainer(string containerId, int? ttlSeconds, CancellationToken cancellationToken)
+    {
+        var resourceId = $"dbs/{databaseId}";
+        using var client = CreateHttpClient(verb: "POST", resourceId: resourceId, resourceType: ContainerResourceType);
+
+        var container = new StorageContainerJsonWrite(
+            id: containerId,
+            defaultTtlSeconds: ttlSeconds,
+            partitionKey: partitionKey);
+
+        using var content = CreateJsonContent(container);
+        var response = await client.PostAsync(resourceId + "/colls", content, cancellationToken).ConfigureAwait(false);
+
+        if (response.IsSuccessStatusCode is false && response.StatusCode is not HttpStatusCode.Conflict)
+        {
+            throw await CreateUnexpectedStatusCodeExceptonAsync(response, cancellationToken).ConfigureAwait(false);
         }
     }
 }

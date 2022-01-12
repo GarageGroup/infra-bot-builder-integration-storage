@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using static System.FormattableString;
 
 namespace GGroupp.Infra.Bot.Builder;
 
@@ -29,80 +30,55 @@ partial class CosmosStorage
 
     private async Task<IDictionary<string, object?>> InnerReadAsync(IReadOnlyCollection<string> keys, CancellationToken cancellationToken)
     {
-        var dictionaries = await Task.WhenAll(keys.GroupBy(GetContainerId).Select(InnerReadContainerAsync));
-        return dictionaries.SelectMany(d => d).ToDictionary(kv => kv.Key, kv => kv.Value);
+        var items = await Task.WhenAll(keys.Select(ReadByKeyAsync));
+        return items.Where(IsNotNull).ToDictionary(GetKey, GetValue);
 
-        Task<IDictionary<string, object?>> InnerReadContainerAsync(IGrouping<string, string> group)
+        Task<StorageItemJsonRead?> ReadByKeyAsync(string key)
             =>
-            InnerReadAsync(group.Key, group.ToArray(), cancellationToken);
+            InnerReadItemAsync(key, cancellationToken);
+
+        static bool IsNotNull([NotNullWhen(true)] StorageItemJsonRead? storageItem)
+            =>
+            storageItem is not null;
+
+        static string GetKey(StorageItemJsonRead? storageItem)
+            =>
+            storageItem?.Key ?? string.Empty;
+
+        static object? GetValue(StorageItemJsonRead? storageItem)
+            =>
+            storageItem?.Value?.ToObject<object>(jsonSerializer);
     }
 
-    private async Task<IDictionary<string, object?>> InnerReadAsync(
-        string containerId, IReadOnlyCollection<string> keys, CancellationToken cancellationToken)
+    private async Task<StorageItemJsonRead?> InnerReadItemAsync(string key, CancellationToken cancellationToken)
     {
-        var resourceId = Invariant($"dbs/{databaseId}/colls/{containerId}");
+        var (containerId, _, itemId) = key.ParseKey();
+        var resourceId = $"dbs/{databaseId}/colls/{containerId}/docs/{itemId}";
 
-        var query = BuildQuery(keys);
-        using var content = CreateJsonContent(query);
-        content.Headers.ContentType = new("application/query+json");
+        using var client = CreateHttpClient(
+            verb: "GET",
+            resourceId: resourceId,
+            resourceType: ItemResourceType,
+            escapedKey: itemId);
 
-        var result = new Dictionary<string, object?>();
-        string? continuationToken = default;
+        var response = await client.GetAsync(resourceId, cancellationToken).ConfigureAwait(false);
 
-        do
+        if (response.StatusCode is HttpStatusCode.NotFound)
         {
-            continuationToken = await InnerReadItemsAsync().ConfigureAwait(false);
+            return default;
         }
-        while (string.IsNullOrEmpty(continuationToken) is false);
 
-        return result;
-
-        async Task<string?> InnerReadItemsAsync()
+        if (response.IsSuccessStatusCode is false)
         {
-            using var client = CreateQueryHttpClient(verb: "POST", resourceId: resourceId, continuationToken: continuationToken);
-            var response = await client.PostAsync(resourceId + "/docs", content, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode is false)
-            {
-                throw await CreateUnexpectedStatusCodeExceptonAsync(response, cancellationToken).ConfigureAwait(false);
-            }
-
-            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            if (string.IsNullOrEmpty(body))
-            {
-                return GetContinuationToken(response);
-            }
-
-            var storageItems = JsonConvert.DeserializeObject<StorageItemSetJsonRead>(body)?.Documents;
-            if (storageItems is null || storageItems.Length is default(int))
-            {
-                return GetContinuationToken(response);
-            }
-
-            foreach (var storageItem in storageItems)
-            {
-                result[storageItem.SourceId ?? string.Empty] = storageItem?.Document?.ToObject<object>(jsonSerializer);
-            }
-
-            return GetContinuationToken(response);
+            throw await CreateUnexpectedStatusCodeExceptonAsync(response, cancellationToken).ConfigureAwait(false);
         }
-    }
 
-    private static StorageQueryJson BuildQuery(IReadOnlyCollection<string> keys)
-    {
-        var names = string.Join(",", Enumerable.Range(0, keys.Count).Select(CreateParameterName));
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(body))
+        {
+            return default;
+        }
 
-        return new(
-            query: $"SELECT c.{StorageItemJsonProperty.SourceId}, c.{StorageItemJsonProperty.Document} FROM c WHERE c.{StorageItemJsonProperty.Id} IN ({names})",
-            parameters: keys.Select(CreateParameterJson).ToArray());
-
-        static StorageQueryParameterJson CreateParameterJson(string key, int index)
-            =>
-            new(
-                name: CreateParameterName(index),
-                value: key.EscapeKey());
-
-        static string CreateParameterName(int index)
-            =>
-            Invariant($"@id{index}");
+        return JsonConvert.DeserializeObject<StorageItemJsonRead>(body);
     }
 }

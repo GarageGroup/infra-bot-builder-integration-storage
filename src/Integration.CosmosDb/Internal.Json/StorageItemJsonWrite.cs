@@ -5,19 +5,19 @@ namespace GGroupp.Infra.Bot.Builder;
 
 internal sealed record class StorageItemJsonWrite
 {
-    internal StorageItemJsonWrite(string id, string sourceId, JObject document)
+    internal StorageItemJsonWrite(string id, string key, JObject value)
     {
-        Id = id;
-        SourceId = sourceId;
-        Document = document;
+        Id = id ?? string.Empty;
+        Key = key ?? string.Empty;
+        Value = value;
     }
 
     [JsonProperty(StorageItemJsonProperty.Id)]
     public string Id { get; }
 
-    [JsonProperty(StorageItemJsonProperty.SourceId)]
-    public string SourceId { get; }
+    [JsonProperty(StorageItemJsonProperty.Key)]
+    public string Key { get; }
 
-    [JsonProperty(StorageItemJsonProperty.Document)]
-    public JObject Document { get; }
+    [JsonProperty(StorageItemJsonProperty.Value)]
+    public JObject Value { get; }
 }

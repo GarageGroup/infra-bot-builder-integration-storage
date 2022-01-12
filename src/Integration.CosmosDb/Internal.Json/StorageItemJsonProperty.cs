@@ -4,7 +4,7 @@ internal static class StorageItemJsonProperty
 {
     public const string Id = "id";
 
-    public const string SourceId = "sourceId";
+    public const string Key = "key";
 
-    public const string Document = "document";
+    public const string Value = "value";
 }

@@ -1,10 +1,9 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -22,7 +21,11 @@ internal sealed partial class CosmosStorage : IStorage
             httpMessageHandler ?? throw new ArgumentNullException(nameof(httpMessageHandler)),
             configuration ?? throw new ArgumentNullException(nameof(configuration)));
 
-    private const string ContinuationTokenHeaderName = "x-ms-continuation";
+    private const string ContainerResourceType = "colls";
+
+    private const string ItemResourceType = "docs";
+
+    private static readonly StoragePartitionKeyJson partitionKey;
 
     private static readonly JsonSerializerSettings jsonSerializerSettings;
 
@@ -30,6 +33,10 @@ internal sealed partial class CosmosStorage : IStorage
 
     static CosmosStorage()
     {
+        partitionKey = new(
+            paths: new[] { "/id" },
+            kind: "Hash",
+            version: 2);
         jsonSerializerSettings = new()
         {
             NullValueHandling = NullValueHandling.Ignore
@@ -47,7 +54,9 @@ internal sealed partial class CosmosStorage : IStorage
 
     private readonly Lazy<HMACSHA256> lazyHmacSha256;
 
-    private readonly string databaseId, userStateContainerId, defaultContainerId;
+    private readonly string databaseId;
+
+    private readonly IReadOnlyDictionary<CosmosStorageContainerType, int?> containerTtlSeconds;
 
     private CosmosStorage(HttpMessageHandler httpMessageHandler, CosmosStorageConfiguration configuration)
     {
@@ -55,8 +64,7 @@ internal sealed partial class CosmosStorage : IStorage
         baseAddress = configuration.BaseAddress;
         lazyHmacSha256 = new(CreateHmacSha256, LazyThreadSafetyMode.ExecutionAndPublication);
         databaseId = configuration.DatabaseId.ToLowerInvariant();
-        defaultContainerId = configuration.DefaultContainerId.ToLowerInvariant();
-        userStateContainerId = configuration.UserStateContainerId.ToLowerInvariant();
+        containerTtlSeconds = configuration.ContainerTtlSeconds;
 
         HMACSHA256 CreateHmacSha256()
             =>
@@ -66,27 +74,15 @@ internal sealed partial class CosmosStorage : IStorage
             };
     }
 
-    private HttpClient CreateHttpClient(string verb, string resourceId, string escapedKey)
+    private HttpClient CreateHttpClient(string verb, string resourceId, string resourceType, string escapedKey)
     {
-        var client = CreateBaseHttpClient(verb: verb, resourceId: resourceId);
+        var client = CreateHttpClient(verb: verb, resourceId: resourceId, resourceType: resourceType);
         client.DefaultRequestHeaders.Add("x-ms-documentdb-partitionkey", "[\"" + escapedKey + "\"]");
 
         return client;
     }
 
-    private HttpClient CreateQueryHttpClient(string verb, string resourceId, string? continuationToken)
-    {
-        var client = CreateBaseHttpClient(verb: verb, resourceId: resourceId);
-
-        client.DefaultRequestHeaders.Add("x-ms-documentdb-isquery", "true");
-        client.DefaultRequestHeaders.Add("x-ms-documentdb-query-enablecrosspartition", "true");
-
-        client.DefaultRequestHeaders.Add(ContinuationTokenHeaderName, continuationToken);
-
-        return client;
-    }
-
-    private HttpClient CreateBaseHttpClient(string verb, string resourceId)
+    private HttpClient CreateHttpClient(string verb, string resourceId, string resourceType)
     {
         var client = new HttpClient(httpMessageHandler, false)
         {
@@ -98,15 +94,15 @@ internal sealed partial class CosmosStorage : IStorage
         client.DefaultRequestHeaders.Add("x-ms-date", utcDate);
         client.DefaultRequestHeaders.Add("x-ms-version", "2018-12-31");
 
-        var authHeader = GenerateMasterKeyAuthorizationSignature(verb, resourceId, utcDate);
+        var authHeader = GenerateAuthorizationHeaderValue(verb: verb, resourceId: resourceId, resourceType: resourceType, utcDate: utcDate);
         client.DefaultRequestHeaders.Add("authorization", authHeader);
 
         return client;
     }
 
-    private string GenerateMasterKeyAuthorizationSignature(string verb, string resourceId, string utcDate)
+    private string GenerateAuthorizationHeaderValue(string verb, string resourceId, string resourceType, string utcDate)
     {
-        var payLoad = Invariant($"{verb.ToLowerInvariant()}\ndocs\n{resourceId}\n{utcDate.ToLowerInvariant()}\n\n");
+        var payLoad = Invariant($"{verb.ToLowerInvariant()}\n{resourceType}\n{resourceId}\n{utcDate.ToLowerInvariant()}\n\n");
 
         var hashPayLoad = lazyHmacSha256.Value.ComputeHash(Encoding.UTF8.GetBytes(payLoad));
         var signature = Convert.ToBase64String(hashPayLoad);
@@ -115,30 +111,15 @@ internal sealed partial class CosmosStorage : IStorage
         return HttpUtility.UrlEncode(masterKeyAuthorizationSignature);
     }
 
-    private static string? GetContinuationToken(HttpResponseMessage response)
-        =>
-        response.Headers.TryGetValues(ContinuationTokenHeaderName, out var values) ? values?.FirstOrDefault() : default;
-
     private static StringContent CreateJsonContent<TJson>(TJson contentJson)
     {
         var body = JsonConvert.SerializeObject(contentJson, Formatting.Indented, jsonSerializerSettings);
         return new(body, Encoding.UTF8, MediaTypeNames.Application.Json);
     }
 
-    private string GetContainerId(string key)
-    {
-        if (string.IsNullOrEmpty(userStateContainerId) || string.IsNullOrEmpty(key))
-        {
-            return defaultContainerId;
-        }
-
-        if (Regex.IsMatch(key, "^[^/]+/users/.*$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
-        {
-            return userStateContainerId;
-        }
-
-        return defaultContainerId;
-    }
+    private int? GetTtlSeconds(CosmosStorageContainerType containerType)
+        =>
+        containerTtlSeconds.TryGetValue(containerType, out var ttl) ? ttl : null;
 
     private static async Task<InvalidOperationException> CreateUnexpectedStatusCodeExceptonAsync(
         HttpResponseMessage response, CancellationToken cancellationToken)
