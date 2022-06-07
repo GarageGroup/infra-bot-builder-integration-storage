@@ -25,14 +25,14 @@ partial class CosmosStorage
 
     private async Task InnerDeleteItemAsync(string key, CancellationToken cancellationToken)
     {
-        var (containerId, _, itemId) = key.ParseKey();
-        var resourceId = $"dbs/{databaseId}/colls/{containerId}/docs/{itemId}";
+        var cosmosKey = key.ParseKey();
+        var resourceId = $"dbs/{databaseId}/colls/{cosmosKey.ContainerId}/docs/{cosmosKey.ItemId}";
 
         using var client = CreateHttpClient(
             verb: "DELETE",
             resourceId: resourceId,
             resourceType: ItemResourceType,
-            escapedKey: itemId);
+            escapedKey: cosmosKey.ItemId);
 
         var response = await client.DeleteAsync(resourceId, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode is false && response.StatusCode is not HttpStatusCode.NotFound)
