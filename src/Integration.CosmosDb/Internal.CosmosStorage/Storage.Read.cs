@@ -52,14 +52,14 @@ partial class CosmosStorage
 
     private async Task<StorageItemJsonRead?> InnerReadItemAsync(string key, CancellationToken cancellationToken)
     {
-        var (containerId, _, itemId) = key.ParseKey();
-        var resourceId = $"dbs/{databaseId}/colls/{containerId}/docs/{itemId}";
+        var cosmosKey = key.ParseKey();
+        var resourceId = $"dbs/{databaseId}/colls/{cosmosKey.ContainerId}/docs/{cosmosKey.ItemId}";
 
         using var client = CreateHttpClient(
             verb: "GET",
             resourceId: resourceId,
             resourceType: ItemResourceType,
-            escapedKey: itemId);
+            escapedKey: cosmosKey.ItemId);
 
         var response = await client.GetAsync(resourceId, cancellationToken).ConfigureAwait(false);
 

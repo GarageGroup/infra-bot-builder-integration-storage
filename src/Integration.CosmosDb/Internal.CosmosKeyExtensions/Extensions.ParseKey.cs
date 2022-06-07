@@ -7,18 +7,24 @@ namespace GGroupp.Infra.Bot.Builder;
 
 partial class CosmosKeyExtensions
 {
-    internal static (string ContainerId, CosmosStorageContainerType ContainerType, string ItemId) ParseKey(this string key)
+    internal static CosmosKey ParseKey(this string key)
     {
         if (string.IsNullOrEmpty(key))
         {
-            return (BotStorageContainerId, CosmosStorageContainerType.BotStorage, string.Empty);
+            return new(
+                containerType: CosmosStorageContainerType.BotStorage,
+                containerId: BotStorageContainerId,
+                itemId: string.Empty);
         }
 
         var match = Regex.Match(key, "^([^/\\?#*]+)/(users|conversations)/([^/\\?#*]+)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         if (match.Success is false)
         {
-            return (BotStorageContainerId, CosmosStorageContainerType.BotStorage, InnerEscape(key));
+            return new(
+                containerType: CosmosStorageContainerType.BotStorage,
+                containerId: BotStorageContainerId,
+                itemId: InnerEscape(key));
         }
 
         var channelId = match.Groups[1].Value;
@@ -26,7 +32,10 @@ partial class CosmosKeyExtensions
         var containerName = containerType is CosmosStorageContainerType.UserState ? "user" : "conversation";
         var itemId = match.Groups[3].Value;
 
-        return ($"{containerName}-state-{channelId}", containerType, InnerTruncate(itemId));
+        return new(
+            containerType: containerType,
+            containerId: $"{containerName}-state-{channelId}",
+            itemId: InnerTruncate(itemId));
 
         static CosmosStorageContainerType ParseContainerType(string containerTypeText)
             =>

@@ -43,19 +43,19 @@ partial class CosmosStorage
 
     private async Task InnerWriteItemAsync(string key, object value, CancellationToken cancellationToken)
     {
-        var (containerId, containerType, itemId) = key.ParseKey();
+        var cosmosKey = key.ParseKey();
 
         var jValue = JObject.FromObject(value, jsonSerializer);
-        var storageItem = new StorageItemJsonWrite(id: itemId, key: key, value: jValue);
+        var storageItem = new StorageItemJsonWrite(id: cosmosKey.ItemId, key: key, value: jValue);
 
         using var content = CreateJsonContent(storageItem);
-        var resourceIdUpdate = $"dbs/{databaseId}/colls/{containerId}/docs/{itemId}";
+        var resourceIdUpdate = $"dbs/{databaseId}/colls/{cosmosKey.ContainerId}/docs/{cosmosKey.ItemId}";
 
         using var clientUpdate = CreateHttpClient(
             verb: "PUT",
             resourceId: resourceIdUpdate,
             resourceType: ItemResourceType,
-            escapedKey: itemId);
+            escapedKey: cosmosKey.ItemId);
 
         var responseUpdate = await clientUpdate.PutAsync(resourceIdUpdate, content, cancellationToken).ConfigureAwait(false);
         if (responseUpdate.IsSuccessStatusCode)
@@ -70,16 +70,16 @@ partial class CosmosStorage
 
         if (HasContainerExisted(responseUpdate) is false)
         {
-            var containerTtlSeconds = GetTtlSeconds(containerType);
-            await InnerCreateContainer(containerId, containerTtlSeconds, cancellationToken).ConfigureAwait(false);
+            var containerTtlSeconds = GetTtlSeconds(cosmosKey.ContainerType);
+            await InnerCreateContainer(cosmosKey.ContainerId, containerTtlSeconds, cancellationToken).ConfigureAwait(false);
         }
 
-        var resourceIdCreate = $"dbs/{databaseId}/colls/{containerId}";
+        var resourceIdCreate = $"dbs/{databaseId}/colls/{cosmosKey.ContainerId}";
         using var clientCreate = CreateHttpClient(
             verb: "POST",
             resourceId: resourceIdCreate,
             resourceType: ItemResourceType,
-            escapedKey: itemId);
+            escapedKey: cosmosKey.ItemId);
 
         var responseCreate = await clientCreate.PostAsync(resourceIdCreate + "/docs", content, cancellationToken).ConfigureAwait(false);
         if (responseCreate.IsSuccessStatusCode)
