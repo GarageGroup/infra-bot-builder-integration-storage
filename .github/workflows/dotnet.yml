@@ -13,7 +13,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
         include-prerelease: false  
-        
+
      # Add NuGet Sources
 
     - name: Create Local NuGet Directory
@@ -25,19 +25,74 @@ jobs:
     - name: Add GGroupp NuGet Source
       run: dotnet nuget add source ${{ secrets.GGROUPP_NUGET_SOURCE_URL }} -n ggroupp -u ${{ secrets.GGROUPP_NUGET_SOURCE_USER_NAME }} -p ${{ secrets.GGROUPP_NUGET_SOURCE_USER_PASSWORD }} --store-password-in-clear-text
 
-    # Integration.CosmosDb.csproj
-    
-    - name: Restore Integration.CosmosDb.csproj
-      run: dotnet restore ./src/*/Integration.CosmosDb.csproj
+    # CosmosApi.Core.ItemPath.csproj
 
-    - name: Build Integration.CosmosDb.csproj
-      run: dotnet build ./src/*/Integration.CosmosDb.csproj --no-restore  -c Release
+    - name: Restore CosmosApi.Core.ItemPath.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Core.ItemPath.csproj
 
-    - name: Pack Integration.CosmosDb.csproj
-      run: dotnet pack ./src/*/Integration.CosmosDb.csproj --no-restore -o ~/nuget  -c Release
-    
+    - name: Build CosmosApi.Core.ItemPath.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Core.ItemPath.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.Core.ItemPath.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Core.ItemPath.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosApi.Abstractions.Read.csproj
+
+    - name: Restore CosmosApi.Abstractions.Read.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Abstractions.Read.csproj
+
+    - name: Build CosmosApi.Abstractions.Read.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Abstractions.Read.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.Abstractions.Read.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Abstractions.Read.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosApi.Abstractions.Write.csproj
+
+    - name: Restore CosmosApi.Abstractions.Write.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Abstractions.Write.csproj
+
+    - name: Build CosmosApi.Abstractions.Write.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Abstractions.Write.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.Abstractions.Write.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Abstractions.Write.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosApi.Abstractions.Delete.csproj
+
+    - name: Restore CosmosApi.Abstractions.Delete.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Abstractions.Delete.csproj
+
+    - name: Build CosmosApi.Abstractions.Delete.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Abstractions.Delete.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.Abstractions.Delete.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Abstractions.Delete.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosApi.csproj
+
+    - name: Restore CosmosApi.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.csproj
+
+    - name: Build CosmosApi.csproj
+      run: dotnet build ./src/*/*/CosmosApi.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosStorage.csproj
+
+    - name: Restore CosmosStorage.csproj
+      run: dotnet restore ./src/*/*/CosmosStorage.csproj
+
+    - name: Build CosmosStorage.csproj
+      run: dotnet build ./src/*/*/CosmosStorage.csproj --no-restore  -c Release
+
+    - name: Pack CosmosStorage.csproj
+      run: dotnet pack ./src/*/*/CosmosStorage.csproj --no-restore -o ~/nuget  -c Release
+
     # Push
-      
+
     - name: Push Packages
       if: ${{ github.ref == 'refs/heads/main' }}
       run: dotnet nuget push "../../../nuget/*.nupkg" -s ${{ secrets.GGROUPP_NUGET_SOURCE_URL }} -k ${{ secrets.GGROUPP_NUGET_SOURCE_USER_PASSWORD }} --skip-duplicate
