@@ -79,9 +79,14 @@ internal sealed partial class CosmosStorage : ICosmosStorage
     {
         var match = ItemPathRegex.Match(source);
 
+        if (match.Success is false)
+        {
+            return new(string.Empty, source);
+        }
+
         return new(
-            channelId: match.Success ? match.Groups[1].Value : string.Empty,
-            itemId: source);
+            channelId: match.Groups[1].Value,
+            itemId: $"{match.Groups[2].Value}:{match.Groups[3].Value}");
     }
 
     private static T InnerPipeSelf<T>(T item)
