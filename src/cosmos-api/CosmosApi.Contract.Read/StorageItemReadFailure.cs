@@ -1,18 +1,18 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
-public readonly record struct StorageItemDeleteFailure
+public readonly record struct StorageItemReadFailure
 {
     private readonly string? failureMessage;
 
-    public StorageItemDeleteFailure(StorageItemDeleteFailureCode failureCode, [AllowNull] string failureMessage)
+    public StorageItemReadFailure(StorageItemReadFailureCode failureCode, [AllowNull] string failureMessage)
     {
         FailureCode = failureCode;
         this.failureMessage = string.IsNullOrEmpty(failureMessage) ? null : failureMessage;
     }
 
-    public StorageItemDeleteFailureCode FailureCode { get; }
+    public StorageItemReadFailureCode FailureCode { get; }
 
     public string FailureMessage => failureMessage ?? string.Empty;
 }

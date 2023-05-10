@@ -1,8 +1,8 @@
 using System;
 using Microsoft.Bot.Builder;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
-public interface ICosmosStorage : IStorage, IDisposable
+public interface ICosmosStorage : IStorage, IStorageLockSupplier, IDisposable
 {
 }

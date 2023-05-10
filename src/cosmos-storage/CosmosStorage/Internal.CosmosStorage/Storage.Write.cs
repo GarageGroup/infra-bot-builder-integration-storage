@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
-partial class CosmosStorage<TCosmosApi>
+partial class CosmosStorage
 {
     public Task WriteAsync(IDictionary<string, object?> changes, CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
-
         if (cancellationToken.IsCancellationRequested)
         {
             return Task.FromCanceled(cancellationToken);
         }
+
+        ThrowIfDisposed();
 
         if (changes is null || changes.Count is default(int))
         {

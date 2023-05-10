@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>GarageGroup.Infra.Bot.Builder</RootNamespace>
+    <AssemblyName>GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract</AssemblyName>
+    <Version>0.0.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract.Delete" Version="0.0.1" />
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract.Lock" Version="0.0.1" />
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract.Read" Version="0.0.1" />
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract.Write" Version="0.0.1" />
+  </ItemGroup>
+
+</Project>

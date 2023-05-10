@@ -5,15 +5,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RootNamespace>GGroupp.Infra.Bot.Builder</RootNamespace>
-    <AssemblyName>GGroupp.Infra.Bot.Builder.Integration.CosmosStorage</AssemblyName>
-    <Version>1.2.0</Version>
+    <RootNamespace>GarageGroup.Infra.Bot.Builder</RootNamespace>
+    <AssemblyName>GarageGroup.Infra.Bot.Builder.Integration.CosmosStorage</AssemblyName>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Bot.Builder.Integration.CosmosApi.Abstractions.Delete" Version="1.0.1" />
-    <PackageReference Include="GGroupp.Infra.Bot.Builder.Integration.CosmosApi.Abstractions.Read" Version="1.0.1" />
-    <PackageReference Include="GGroupp.Infra.Bot.Builder.Integration.CosmosApi.Abstractions.Write" Version="1.0.1" />
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Core.Lock" Version="0.0.2" />
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract" Version="0.0.1" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.19.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="PrimeFuncPack.Core.Func.Abstractions.Sync" Version="2.0.0" />

@@ -3,7 +3,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using PrimeFuncPack;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 using ICosmosApiProvider = IFunc<ICosmosApi>;
 

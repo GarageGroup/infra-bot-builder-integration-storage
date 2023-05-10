@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 internal sealed record class StorageContainerRequest
 {

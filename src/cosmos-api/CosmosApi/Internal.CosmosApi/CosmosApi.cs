@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Web;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 internal sealed partial class CosmosApi : ICosmosApi
 {
@@ -52,6 +54,19 @@ internal sealed partial class CosmosApi : ICosmosApi
         =>
         string.IsNullOrEmpty(path?.UserId) ? Failure.Create("UserId must be specified") : path;
 
+    private static bool IsContainerExisted(StorageHttpFailure httpFailure)
+    {
+        return httpFailure.Headers?.FirstOrDefault(IsPartitionKeyRangeId).Value?.Any(IsNotEmpty) is true;
+
+        static bool IsPartitionKeyRangeId(KeyValuePair<string, IEnumerable<string>> header)
+            =>
+            string.Equals(header.Key, "x-ms-documentdb-partitionkeyrangeid", StringComparison.InvariantCultureIgnoreCase);
+
+        static bool IsNotEmpty(string? value)
+            =>
+            string.IsNullOrEmpty(value) is false;
+    }
+
     private static string CreateContainerId(StorageItemPath path)
     {
         var containerName = path.ItemType switch
@@ -69,5 +84,17 @@ internal sealed partial class CosmosApi : ICosmosApi
         }
 
         return idBuilder.Append('-').Append(path.ChannelId).ToString();
+    }
+
+    private static string CreateContainerId(StorageItemLockPath input)
+    {
+        var idBuilder = new StringBuilder("lock-state").Append("-state");
+
+        if (string.IsNullOrEmpty(input.ChannelId))
+        {
+            return idBuilder.ToString();
+        }
+
+        return idBuilder.Append('-').Append(input.ChannelId).ToString();
     }
 }

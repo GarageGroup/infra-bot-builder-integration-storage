@@ -1,4 +1,4 @@
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 public sealed record class StorageItemWriteIn
 {

@@ -1,4 +1,4 @@
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 public enum CosmosStorageContainerType
 {
@@ -6,5 +6,7 @@ public enum CosmosStorageContainerType
 
     UserState,
 
-    ConversationState
+    ConversationState,
+
+    LockStorage
 }

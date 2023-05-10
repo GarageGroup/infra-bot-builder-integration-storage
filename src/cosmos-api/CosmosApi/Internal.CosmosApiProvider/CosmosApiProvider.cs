@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 internal sealed partial class CosmosApiProvider : IFunc<CosmosApi>
 {

@@ -4,20 +4,19 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 partial class CosmosApi
 {
     public ValueTask<Result<StorageItemReadOut, StorageItemReadFailure>> ReadItemAsync(
         StorageItemPath path, CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
-
         if (cancellationToken.IsCancellationRequested)
         {
             return ValueTask.FromCanceled<Result<StorageItemReadOut, StorageItemReadFailure>>(cancellationToken);
         }
 
+        ThrowIfDisposed();
         return ValidatePath(path).MapFailure(MapFailure).ForwardValueAsync(InnerInvokeAsync);
 
         static StorageItemReadFailure MapFailure(Failure<Unit> failure)
