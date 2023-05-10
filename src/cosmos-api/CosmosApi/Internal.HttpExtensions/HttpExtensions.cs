@@ -11,7 +11,7 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 internal static partial class HttpExtensions
 {

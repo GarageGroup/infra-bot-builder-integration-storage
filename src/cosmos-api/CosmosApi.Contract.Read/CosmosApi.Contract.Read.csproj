@@ -5,13 +5,13 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RootNamespace>GGroupp.Infra.Bot.Builder</RootNamespace>
-    <AssemblyName>GGroupp.Infra.Bot.Builder.Integration.CosmosApi.Abstractions.Write</AssemblyName>
-    <Version>1.0.1</Version>
+    <RootNamespace>GarageGroup.Infra.Bot.Builder</RootNamespace>
+    <AssemblyName>GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Contract.Read</AssemblyName>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Bot.Builder.Integration.CosmosApi.Core.ItemPath" Version="1.0.1" />
+    <PackageReference Include="GarageGroup.Infra.Bot.Builder.Integration.CosmosApi.Entity.ItemPath" Version="0.0.1" />
     <PackageReference Include="PrimeFuncPack.Core.Result" Version="2.0.2" />
   </ItemGroup>
 

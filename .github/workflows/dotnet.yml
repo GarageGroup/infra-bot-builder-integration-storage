@@ -31,49 +31,71 @@ jobs:
         -p ${{ secrets.GG_NUGET_SOURCE_USER_PASSWORD }}
         --store-password-in-clear-text
 
-    # CosmosApi.Core.ItemPath.csproj
+    # CosmosApi.Entity.ItemPath.csproj
 
-    - name: Restore CosmosApi.Core.ItemPath.csproj
-      run: dotnet restore ./src/*/*/CosmosApi.Core.ItemPath.csproj
+    - name: Restore CosmosApi.Entity.ItemPath.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Entity.ItemPath.csproj
 
-    - name: Build CosmosApi.Core.ItemPath.csproj
-      run: dotnet build ./src/*/*/CosmosApi.Core.ItemPath.csproj --no-restore  -c Release
+    - name: Build CosmosApi.Entity.ItemPath.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Entity.ItemPath.csproj --no-restore  -c Release
 
-    - name: Pack CosmosApi.Core.ItemPath.csproj
-      run: dotnet pack ./src/*/*/CosmosApi.Core.ItemPath.csproj --no-restore -o ~/nuget  -c Release
+    - name: Pack CosmosApi.Entity.ItemPath.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Entity.ItemPath.csproj --no-restore -o ~/nuget  -c Release
 
-    # CosmosApi.Abstractions.Read.csproj
+    # CosmosApi.Contract.Read.csproj
 
-    - name: Restore CosmosApi.Abstractions.Read.csproj
-      run: dotnet restore ./src/*/*/CosmosApi.Abstractions.Read.csproj
+    - name: Restore CosmosApi.Contract.Read.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Contract.Read.csproj
 
-    - name: Build CosmosApi.Abstractions.Read.csproj
-      run: dotnet build ./src/*/*/CosmosApi.Abstractions.Read.csproj --no-restore  -c Release
+    - name: Build CosmosApi.Contract.Read.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Contract.Read.csproj --no-restore  -c Release
 
-    - name: Pack CosmosApi.Abstractions.Read.csproj
-      run: dotnet pack ./src/*/*/CosmosApi.Abstractions.Read.csproj --no-restore -o ~/nuget  -c Release
+    - name: Pack CosmosApi.Contract.Read.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Contract.Read.csproj --no-restore -o ~/nuget  -c Release
 
-    # CosmosApi.Abstractions.Write.csproj
+    # CosmosApi.Contract.Write.csproj
 
-    - name: Restore CosmosApi.Abstractions.Write.csproj
-      run: dotnet restore ./src/*/*/CosmosApi.Abstractions.Write.csproj
+    - name: Restore CosmosApi.Contract.Write.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Contract.Write.csproj
 
-    - name: Build CosmosApi.Abstractions.Write.csproj
-      run: dotnet build ./src/*/*/CosmosApi.Abstractions.Write.csproj --no-restore  -c Release
+    - name: Build CosmosApi.Contract.Write.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Contract.Write.csproj --no-restore  -c Release
 
-    - name: Pack CosmosApi.Abstractions.Write.csproj
-      run: dotnet pack ./src/*/*/CosmosApi.Abstractions.Write.csproj --no-restore -o ~/nuget  -c Release
+    - name: Pack CosmosApi.Contract.Write.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Contract.Write.csproj --no-restore -o ~/nuget  -c Release
 
-    # CosmosApi.Abstractions.Delete.csproj
+    # CosmosApi.Contract.Delete.csproj
 
-    - name: Restore CosmosApi.Abstractions.Delete.csproj
-      run: dotnet restore ./src/*/*/CosmosApi.Abstractions.Delete.csproj
+    - name: Restore CosmosApi.Contract.Delete.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Contract.Delete.csproj
 
-    - name: Build CosmosApi.Abstractions.Delete.csproj
-      run: dotnet build ./src/*/*/CosmosApi.Abstractions.Delete.csproj --no-restore  -c Release
+    - name: Build CosmosApi.Contract.Delete.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Contract.Delete.csproj --no-restore  -c Release
 
-    - name: Pack CosmosApi.Abstractions.Delete.csproj
-      run: dotnet pack ./src/*/*/CosmosApi.Abstractions.Delete.csproj --no-restore -o ~/nuget  -c Release
+    - name: Pack CosmosApi.Contract.Delete.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Contract.Delete.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosApi.Contract.Lock.csproj
+
+    - name: Restore CosmosApi.Contract.Lock.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Contract.Lock.csproj
+
+    - name: Build CosmosApi.Contract.Lock.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Contract.Lock.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.Contract.Lock.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Contract.Lock.csproj --no-restore -o ~/nuget  -c Release
+
+    # CosmosApi.Contract.csproj
+
+    - name: Restore CosmosApi.Contract.csproj
+      run: dotnet restore ./src/*/*/CosmosApi.Contract.csproj
+
+    - name: Build CosmosApi.Contract.csproj
+      run: dotnet build ./src/*/*/CosmosApi.Contract.csproj --no-restore  -c Release
+
+    - name: Pack CosmosApi.Contract.csproj
+      run: dotnet pack ./src/*/*/CosmosApi.Contract.csproj --no-restore -o ~/nuget  -c Release
 
     # CosmosApi.csproj
 

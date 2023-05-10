@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
-internal sealed partial class CosmosStorage<TCosmosApi> : ICosmosStorage
-    where TCosmosApi : class, IStorageItemReadSupplier, IStorageItemWriteSupplier, IStorageItemDeleteSupplier
+internal sealed partial class CosmosStorage : ICosmosStorage
 {
     private static readonly Regex ItemPathRegex;
 
@@ -15,25 +14,25 @@ internal sealed partial class CosmosStorage<TCosmosApi> : ICosmosStorage
         ItemPathRegex = new(
             "^([^/\\?#*]+)/(users|conversations)/([^/\\?#*]+)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-    public static CosmosStorage<TCosmosApi> Create(IFunc<TCosmosApi> cosmosApiProvider, CosmosStorageOption option)
+    public static CosmosStorage Create(IFunc<ICosmosApi> cosmosApiProvider, CosmosStorageOption option)
         =>
         new(
             cosmosApiProvider ?? throw new ArgumentNullException(nameof(cosmosApiProvider)), option);
 
-    public static CosmosStorage<TCosmosApi> Create(IFunc<TCosmosApi> cosmosApiProvider)
+    public static CosmosStorage Create(IFunc<ICosmosApi> cosmosApiProvider)
         =>
         new(
             cosmosApiProvider ?? throw new ArgumentNullException(nameof(cosmosApiProvider)), default);
 
-    private readonly Lazy<TCosmosApi> lazyCosmosApi;
+    private readonly Lazy<ICosmosApi> lazyCosmosApi;
 
-    private readonly IReadOnlyDictionary<StorageItemType, int?> containerTtlSeconds;
+    private readonly IReadOnlyDictionary<CosmosStorageContainerType, int?> containerTtlSeconds;
 
     private bool disposed;
 
-    private CosmosStorage(IFunc<TCosmosApi> cosmosApiProvider, CosmosStorageOption option)
+    private CosmosStorage(IFunc<ICosmosApi> cosmosApiProvider, CosmosStorageOption option)
     {
-        lazyCosmosApi = new Lazy<TCosmosApi>(cosmosApiProvider.Invoke, LazyThreadSafetyMode.ExecutionAndPublication);
+        lazyCosmosApi = new Lazy<ICosmosApi>(cosmosApiProvider.Invoke, LazyThreadSafetyMode.ExecutionAndPublication);
         containerTtlSeconds = option.ContainerTtlSeconds;
     }
 
@@ -46,6 +45,15 @@ internal sealed partial class CosmosStorage<TCosmosApi> : ICosmosStorage
     }
 
     private int? GetTtlSeconds(StorageItemType itemType)
+        =>
+        itemType switch
+        {
+            StorageItemType.UserState => GetTtlSeconds(CosmosStorageContainerType.UserState),
+            StorageItemType.ConversationState => GetTtlSeconds(CosmosStorageContainerType.ConversationState),
+            _ => GetTtlSeconds(CosmosStorageContainerType.BotStorage)
+        };
+
+    private int? GetTtlSeconds(CosmosStorageContainerType itemType)
         =>
         containerTtlSeconds.TryGetValue(itemType, out var ttl) ? ttl : null;
 
@@ -65,6 +73,15 @@ internal sealed partial class CosmosStorage<TCosmosApi> : ICosmosStorage
             itemType: match.Groups[2].Value[0] is 'u' ? StorageItemType.UserState : StorageItemType.ConversationState,
             channelId: match.Groups[1].Value,
             userId: match.Groups[3].Value);
+    }
+
+    private static StorageItemLockPath ParseItemLockPath(string source)
+    {
+        var match = ItemPathRegex.Match(source);
+
+        return new(
+            channelId: match.Success ? match.Groups[1].Value : string.Empty,
+            itemId: source);
     }
 
     private static T InnerPipeSelf<T>(T item)

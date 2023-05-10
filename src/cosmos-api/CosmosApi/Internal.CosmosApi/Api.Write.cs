@@ -1,25 +1,22 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 partial class CosmosApi
 {
     public ValueTask<Result<Unit, StorageItemWriteFailure>> WriteItemAsync(
         StorageItemWriteIn? input, CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
-
         if (cancellationToken.IsCancellationRequested)
         {
             return ValueTask.FromCanceled<Result<Unit, StorageItemWriteFailure>>(cancellationToken);
         }
 
+        ThrowIfDisposed();
         return ValidatePath(input?.Path).MapFailure(MapPathFailure).Forward(InnerValidateKey).ForwardValueAsync(InnerInvokeAsync);
 
         static StorageItemWriteFailure MapPathFailure(Failure<Unit> failure)
@@ -83,7 +80,13 @@ partial class CosmosApi
             return default(Unit);
         }
 
-        return ToUnknownFailure(resultCreate.FailureOrThrow());
+        var failureCreate = resultCreate.FailureOrThrow();
+        if (failureCreate.FailureCode is HttpStatusCode.Conflict)
+        {
+            return default(Unit);
+        }
+
+        return ToUnknownFailure(failureCreate);
 
         ValueTask<Result<Unit, StorageHttpFailure>> EnsureContainerAsync()
         {
@@ -121,18 +124,5 @@ partial class CosmosApi
         }
 
         return input;
-    }
-
-    private static bool IsContainerExisted(StorageHttpFailure httpFailure)
-    {
-        return httpFailure.Headers?.FirstOrDefault(IsPartitionKeyRangeId).Value?.Any(IsNotEmpty) is true;
-
-        static bool IsPartitionKeyRangeId(KeyValuePair<string, IEnumerable<string>> header)
-            =>
-            string.Equals(header.Key, "x-ms-documentdb-partitionkeyrangeid", StringComparison.InvariantCultureIgnoreCase);
-
-        static bool IsNotEmpty(string? value)
-            =>
-            string.IsNullOrEmpty(value) is false;
     }
 }

@@ -3,18 +3,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
-partial class CosmosStorage<TCosmosApi>
+partial class CosmosStorage
 {
     public Task DeleteAsync(string[] keys, CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
-
         if (cancellationToken.IsCancellationRequested)
         {
             return Task.FromCanceled(cancellationToken);
         }
+
+        ThrowIfDisposed();
 
         if (keys is null || keys.Length is default(int))
         {

@@ -3,45 +3,40 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using PrimeFuncPack;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 public static class CosmosStorageDependency
 {
-    public static Dependency<ICosmosStorage> UseCosmosStorage<TCosmosApi>(
-        this Dependency<IFunc<TCosmosApi>, CosmosStorageOption> dependency)
-        where TCosmosApi : class, IStorageItemReadSupplier, IStorageItemWriteSupplier, IStorageItemDeleteSupplier
+    private const int LockStorageDefaultTtlSeconds = 300;
+
+    public static Dependency<ICosmosStorage> UseCosmosStorage(this Dependency<IFunc<ICosmosApi>, CosmosStorageOption> dependency)
     {
         ArgumentNullException.ThrowIfNull(dependency);
 
-        return dependency.Fold<ICosmosStorage>(CosmosStorage<TCosmosApi>.Create);
+        return dependency.Fold<ICosmosStorage>(CosmosStorage.Create);
     }
 
-    public static Dependency<ICosmosStorage> UseCosmosStorage<TCosmosApi>(
-        this Dependency<IFunc<TCosmosApi>> dependency)
-        where TCosmosApi : class, IStorageItemReadSupplier, IStorageItemWriteSupplier, IStorageItemDeleteSupplier
+    public static Dependency<ICosmosStorage> UseCosmosStorage(this Dependency<IFunc<ICosmosApi>> dependency)
     {
         ArgumentNullException.ThrowIfNull(dependency);
 
-        return dependency.Map<ICosmosStorage>(CosmosStorage<TCosmosApi>.Create);
+        return dependency.Map<ICosmosStorage>(CosmosStorage.Create);
     }
 
-    public static Dependency<ICosmosStorage> UseCosmosStorage<TCosmosApi>(
-        this Dependency<IFunc<TCosmosApi>> dependency, Func<IServiceProvider, CosmosStorageOption> optionResolver)
-        where TCosmosApi : class, IStorageItemReadSupplier, IStorageItemWriteSupplier, IStorageItemDeleteSupplier
+    public static Dependency<ICosmosStorage> UseCosmosStorage(
+        this Dependency<IFunc<ICosmosApi>> dependency, Func<IServiceProvider, CosmosStorageOption> optionResolver)
     {
         ArgumentNullException.ThrowIfNull(dependency);
         ArgumentNullException.ThrowIfNull(optionResolver);
 
-        return dependency.With(optionResolver).Fold<ICosmosStorage>(CosmosStorage<TCosmosApi>.Create);
+        return dependency.With(optionResolver).Fold<ICosmosStorage>(CosmosStorage.Create);
     }
 
-    public static Dependency<ICosmosStorage> UseCosmosStorageStandard<TCosmosApi>(
-        this Dependency<IFunc<TCosmosApi>> dependency, string sectionName)
-        where TCosmosApi : class, IStorageItemReadSupplier, IStorageItemWriteSupplier, IStorageItemDeleteSupplier
+    public static Dependency<ICosmosStorage> UseCosmosStorageStandard(this Dependency<IFunc<ICosmosApi>> dependency, string sectionName)
     {
         ArgumentNullException.ThrowIfNull(dependency);
 
-        return dependency.With(ResolveOption).Fold<ICosmosStorage>(CosmosStorage<TCosmosApi>.Create);
+        return dependency.With(ResolveOption).Fold<ICosmosStorage>(CosmosStorage.Create);
 
         CosmosStorageOption ResolveOption(IServiceProvider serviceProvider)
             =>
@@ -51,11 +46,12 @@ public static class CosmosStorageDependency
     private static CosmosStorageOption ReadCosmosStorageOption(this IConfigurationSection section)
         =>
         new(
-            containerTtlSeconds: new Dictionary<StorageItemType, int?>
+            containerTtlSeconds: new Dictionary<CosmosStorageContainerType, int?>
             {
-                [StorageItemType.UserState] = section.GetTtlSeconds("UserStateContainerTtlHours"),
-                [StorageItemType.ConversationState] = section.GetTtlSeconds("ConversationStateContainerTtlHours"),
-                [StorageItemType.Default] = section.GetTtlSeconds("BotStorageContainerTtlHours")
+                [CosmosStorageContainerType.UserState] = section.GetTtlSeconds("UserStateContainerTtlHours"),
+                [CosmosStorageContainerType.ConversationState] = section.GetTtlSeconds("ConversationStateContainerTtlHours"),
+                [CosmosStorageContainerType.BotStorage] = section.GetTtlSeconds("BotStorageContainerTtlHours"),
+                [CosmosStorageContainerType.LockStorage] = section.GetTtlSeconds("LockStorageContainerTtlHours") ?? LockStorageDefaultTtlSeconds
             });
 
     private static int? GetTtlSeconds(this IConfiguration configuration, string ttlHoursKey)

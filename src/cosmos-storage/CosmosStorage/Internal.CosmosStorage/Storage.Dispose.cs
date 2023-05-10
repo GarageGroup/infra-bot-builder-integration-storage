@@ -1,6 +1,6 @@
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
-partial class CosmosStorage<TCosmosApi>
+partial class CosmosStorage
 {
     public void Dispose()
     {

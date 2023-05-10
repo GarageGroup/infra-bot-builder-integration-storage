@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace GGroupp.Infra.Bot.Builder;
+namespace GarageGroup.Infra.Bot.Builder;
 
 partial class HttpExtensions
 {
