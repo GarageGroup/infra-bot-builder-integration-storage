@@ -14,7 +14,7 @@ internal static partial class HttpExtensions
 {
     private const int MaxRetries = 300;
 
-    private const int MinDelayMilliseconds = 900;
+    private const int MinDelayMilliseconds = 100;
 
     private const int MaxDelayMilliseconds = 1000;
 
