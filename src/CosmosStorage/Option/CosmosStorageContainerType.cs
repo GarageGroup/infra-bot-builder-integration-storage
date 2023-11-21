@@ -6,7 +6,5 @@ public enum CosmosStorageContainerType
 
     UserState,
 
-    ConversationState,
-
-    LockStorage
+    ConversationState
 }

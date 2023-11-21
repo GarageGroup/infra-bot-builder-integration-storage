@@ -9,8 +9,6 @@ namespace GarageGroup.Infra.Bot.Builder;
 
 public static class CosmosStorageDependency
 {
-    private const int LockStorageDefaultTtlSeconds = 300;
-
     public static Dependency<ICosmosStorage> UseCosmosStorage(this Dependency<HttpMessageHandler, CosmosStorageOption> dependency)
     {
         ArgumentNullException.ThrowIfNull(dependency);
@@ -56,8 +54,7 @@ public static class CosmosStorageDependency
             {
                 [CosmosStorageContainerType.UserState] = section.GetTtlSeconds("UserStateContainerTtlHours"),
                 [CosmosStorageContainerType.ConversationState] = section.GetTtlSeconds("ConversationStateContainerTtlHours"),
-                [CosmosStorageContainerType.BotStorage] = section.GetTtlSeconds("BotStorageContainerTtlHours"),
-                [CosmosStorageContainerType.LockStorage] = section.GetTtlSeconds("LockStorageContainerTtlHours") ?? LockStorageDefaultTtlSeconds
+                [CosmosStorageContainerType.BotStorage] = section.GetTtlSeconds("BotStorageContainerTtlHours")
             });
 
     private static Uri GetUriOrThrow(this IConfigurationSection section, string key)
