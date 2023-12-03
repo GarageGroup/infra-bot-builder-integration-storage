@@ -26,6 +26,11 @@ partial class CosmosStorage
             return Task.CompletedTask;
         }
 
+        if (semaphore is null)
+        {
+            return InnerWriteAsync(changes, cancellationToken);
+        }
+
         return semaphore.InvokeAsync(InnerWriteAsync, changes, cancellationToken);
     }
 

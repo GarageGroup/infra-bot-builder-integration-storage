@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>GarageGroup.Infra.Bot.Builder</RootNamespace>
+    <AssemblyName>GarageGroup.Infra.Bot.Builder.Integration.Storage.CosmosDb</AssemblyName>
+    <Version>0.4.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bot.Builder" Version="4.21.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.1.0" />
+    <PackageReference Include="PrimeFuncPack.Primitives.Pipeline" Version="2.0.3" />
+    <PackageReference Include="PrimeFuncPack.Primitives.Strings" Version="2.0.3" />
+  </ItemGroup>
+
+</Project>

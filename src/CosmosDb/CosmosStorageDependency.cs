@@ -48,8 +48,8 @@ public static class CosmosStorageDependency
         =>
         new(
             baseAddress: section.GetUriOrThrow("BaseAddressUrl"),
-            masterKey: section["MasterKey"].OrEmpty(),
             databaseId: section["DatabaseId"].OrEmpty(),
+            masterKey: section["MasterKey"],
             containerTtlSeconds: new Dictionary<CosmosStorageContainerType, int?>
             {
                 [CosmosStorageContainerType.UserState] = section.GetTtlSeconds("UserStateContainerTtlHours"),
