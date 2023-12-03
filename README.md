@@ -1,1 +1,1 @@
-# infra-bot-builder-integration-cosmosdb
+# infra-bot-builder-integration-storage

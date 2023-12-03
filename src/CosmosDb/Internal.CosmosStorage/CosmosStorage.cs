@@ -34,9 +34,9 @@ internal sealed partial class CosmosStorage : ICosmosStorage
 
     private readonly CosmosStorageOption option;
 
-    private readonly HMACSHA256 hashAlgorithm;
+    private readonly HMACSHA256? hashAlgorithm;
 
-    private readonly SemaphoreSlim semaphore;
+    private readonly SemaphoreSlim? semaphore;
 
     private bool disposed;
 
@@ -45,12 +45,15 @@ internal sealed partial class CosmosStorage : ICosmosStorage
         this.httpMessageHandler = httpMessageHandler;
         this.option = option;
 
-        hashAlgorithm = new()
+        if (string.IsNullOrEmpty(option.MasterKey) is false)
         {
-            Key = Convert.FromBase64String(option.MasterKey)
-        };
+            hashAlgorithm = new()
+            {
+                Key = Convert.FromBase64String(option.MasterKey)
+            };
 
-        semaphore = new(option.MaxDegreeOfParallelism ?? 2);
+            semaphore = new(option.MaxDegreeOfParallelism ?? 2);
+        }
     }
 
     private HttpClient CreateHttpClient(string escapedKey)

@@ -9,8 +9,8 @@ partial class CosmosStorage
             return;
         }
 
-        hashAlgorithm.Dispose();
-        semaphore.Dispose();
+        hashAlgorithm?.Dispose();
+        semaphore?.Dispose();
 
         disposed = true;
     }

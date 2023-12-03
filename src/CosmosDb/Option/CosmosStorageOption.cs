@@ -17,21 +17,21 @@ public sealed record class CosmosStorageOption
 
     public CosmosStorageOption(
         Uri baseAddress,
-        string masterKey,
         string databaseId,
+        [AllowNull] string masterKey,
         [AllowNull] IReadOnlyDictionary<CosmosStorageContainerType, int?> containerTtlSeconds)
     {
         BaseAddress = baseAddress;
-        MasterKey = masterKey.OrEmpty();
         DatabaseId = databaseId.OrEmpty();
+        MasterKey = masterKey.OrNullIfEmpty();
         ContainerTtlSeconds = containerTtlSeconds ?? EmptyContainerTtlSeconds;
     }
 
     public Uri BaseAddress { get; }
 
-    public string MasterKey { get; }
-
     public string DatabaseId { get; }
+
+    public string? MasterKey { get; }
 
     public IReadOnlyDictionary<CosmosStorageContainerType, int?> ContainerTtlSeconds { get; }
 

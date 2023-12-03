@@ -29,6 +29,11 @@ partial class CosmosStorage
             return Task.FromResult<IDictionary<string, object?>>(new Dictionary<string, object?>());
         }
 
+        if (semaphore is null)
+        {
+            return InnerReadAsync(notEmptyKeys, cancellationToken);
+        }
+
         return semaphore.InvokeAsync(InnerReadAsync, notEmptyKeys, cancellationToken);
 
         static bool IsNotEmpty(string value)

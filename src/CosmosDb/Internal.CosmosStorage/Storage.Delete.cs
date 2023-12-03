@@ -26,6 +26,11 @@ partial class CosmosStorage
             return Task.CompletedTask;
         }
 
+        if (semaphore is null)
+        {
+            return DeleteAllAsync(keys, cancellationToken);
+        }
+
         return semaphore.InvokeAsync(DeleteAllAsync, keys, cancellationToken);
 
         Task DeleteAllAsync(string[] keys, CancellationToken cancellationToken)

@@ -11,7 +11,7 @@ partial class HttpExtensions
     internal static async Task<HttpResponseMessage> GetResponseAsync<TJson>(
         this HttpClient httpClient,
         HttpMethod method,
-        HashAlgorithm hashAlgorithm,
+        HashAlgorithm? hashAlgorithm,
         string resourceId,
         string resourceType,
         string requestUri,
@@ -31,14 +31,14 @@ partial class HttpExtensions
 
             var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if (retries++ >= MaxRetries || response.IsSuccessStatusCode)
+            if (hashAlgorithm is null || retries++ >= MaxRetries || response.IsSuccessStatusCode)
             {
                 return response;
             }
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
             {
-                await Delay(cancellationToken).ConfigureAwait(false);
+                await DelayAsync(cancellationToken).ConfigureAwait(false);
                 continue;
             }
 
