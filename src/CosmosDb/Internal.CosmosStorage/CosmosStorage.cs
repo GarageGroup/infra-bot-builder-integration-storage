@@ -80,10 +80,17 @@ internal sealed partial class CosmosStorage : ICosmosStorage
             string.IsNullOrEmpty(source) is false;
     }
 
-    private async Task CreateContainerAsync(string containerId, CosmosStorageContainerType type, CancellationToken cancellationToken)
+    private async Task CreateContainerAsync(IStorageContainerPath containerPath, CancellationToken cancellationToken)
     {
+        var containerType = containerPath.ItemType switch
+        {
+            StorageItemType.UserState => CosmosStorageContainerType.UserState,
+            StorageItemType.ConversationState => CosmosStorageContainerType.ConversationState,
+            _ => CosmosStorageContainerType.BotStorage
+        };
+
         var resourceId = $"dbs/{option.DatabaseId}";
-        var ttlSeconds = option.ContainerTtlSeconds.TryGetValue(type, out var ttl) ? ttl : null;
+        var ttlSeconds = option.ContainerTtlSeconds.TryGetValue(containerType, out var ttl) ? ttl : null;
 
         using var client = CreateHttpClient();
 
@@ -94,7 +101,7 @@ internal sealed partial class CosmosStorage : ICosmosStorage
             resourceType: ContainerResourceType,
             requestUri: resourceId + "/colls",
             contentJson: new StorageContainerJsonWrite(
-                id: containerId,
+                id: containerPath.GetContainerId(),
                 defaultTtlSeconds: ttlSeconds,
                 partitionKey: ContainerPartitionKey),
             cancellationToken: cancellationToken)

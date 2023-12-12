@@ -55,7 +55,8 @@ public static class CosmosStorageDependency
                 [CosmosStorageContainerType.UserState] = section.GetTtlSeconds("UserStateContainerTtlHours"),
                 [CosmosStorageContainerType.ConversationState] = section.GetTtlSeconds("ConversationStateContainerTtlHours"),
                 [CosmosStorageContainerType.BotStorage] = section.GetTtlSeconds("BotStorageContainerTtlHours")
-            });
+            },
+            pingChannels: section.GetSection("PingChannels").Get<string[]>());
 
     private static Uri GetUriOrThrow(this IConfigurationSection section, string key)
     {

@@ -7,10 +7,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra.Bot.Builder</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Bot.Builder.Integration.Storage.CosmosDb</AssemblyName>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GarageGroup.Infra.HealthCheck.Api.Contract.Ping" Version="0.0.1" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.21.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.1.0" />

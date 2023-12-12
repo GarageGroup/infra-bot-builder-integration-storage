@@ -86,14 +86,7 @@ partial class CosmosStorage
 
         if (IsContainerExisted(responseUpdate) is false)
         {
-            var containerType = itemPath.ItemType switch
-            {
-                StorageItemType.UserState => CosmosStorageContainerType.UserState,
-                StorageItemType.ConversationState => CosmosStorageContainerType.ConversationState,
-                _ => CosmosStorageContainerType.BotStorage
-            };
-
-            await CreateContainerAsync(containerId, containerType, cancellationToken).ConfigureAwait(false);
+            await CreateContainerAsync(itemPath, cancellationToken).ConfigureAwait(false);
         }
 
         var resourceIdCreate = $"dbs/{option.DatabaseId}/colls/{containerId}";
