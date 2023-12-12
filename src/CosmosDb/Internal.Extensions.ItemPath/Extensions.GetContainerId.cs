@@ -4,7 +4,7 @@ namespace GarageGroup.Infra.Bot.Builder;
 
 partial class ItemPathExtensions
 {
-    internal static string GetContainerId(this StorageItemPath path)
+    internal static string GetContainerId(this IStorageContainerPath path)
     {
         var containerName = path.ItemType switch
         {

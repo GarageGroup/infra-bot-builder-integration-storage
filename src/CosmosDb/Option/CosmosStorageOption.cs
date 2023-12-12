@@ -19,12 +19,14 @@ public sealed record class CosmosStorageOption
         Uri baseAddress,
         string databaseId,
         [AllowNull] string masterKey,
-        [AllowNull] IReadOnlyDictionary<CosmosStorageContainerType, int?> containerTtlSeconds)
+        [AllowNull] IReadOnlyDictionary<CosmosStorageContainerType, int?> containerTtlSeconds,
+        [AllowNull] IReadOnlyList<string> pingChannels = null)
     {
         BaseAddress = baseAddress;
         DatabaseId = databaseId.OrEmpty();
         MasterKey = masterKey.OrNullIfEmpty();
         ContainerTtlSeconds = containerTtlSeconds ?? EmptyContainerTtlSeconds;
+        PingChannels = pingChannels ?? Array.Empty<string>();
     }
 
     public Uri BaseAddress { get; }
@@ -34,6 +36,8 @@ public sealed record class CosmosStorageOption
     public string? MasterKey { get; }
 
     public IReadOnlyDictionary<CosmosStorageContainerType, int?> ContainerTtlSeconds { get; }
+
+    public IReadOnlyList<string> PingChannels { get; }
 
     public int? MaxDegreeOfParallelism { get; init; }
 }

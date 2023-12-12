@@ -2,7 +2,7 @@ using System;
 
 namespace GarageGroup.Infra.Bot.Builder;
 
-internal sealed record class StorageItemPath
+internal sealed record class StorageItemPath : IStorageContainerPath
 {
     public StorageItemPath(StorageItemType itemType, string channelId, string itemId)
     {
