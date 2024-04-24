@@ -26,7 +26,7 @@ public sealed record class CosmosStorageOption
         DatabaseId = databaseId.OrEmpty();
         MasterKey = masterKey.OrNullIfEmpty();
         ContainerTtlSeconds = containerTtlSeconds ?? EmptyContainerTtlSeconds;
-        PingChannels = pingChannels ?? Array.Empty<string>();
+        PingChannels = pingChannels ?? [];
     }
 
     public Uri BaseAddress { get; }

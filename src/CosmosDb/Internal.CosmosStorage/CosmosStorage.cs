@@ -22,7 +22,7 @@ internal sealed partial class CosmosStorage : ICosmosStorage
 
     static CosmosStorage()
     {
-        ContainerPartitionKey = new(paths: new[] { "/id" }, kind: "Hash", version: 2);
+        ContainerPartitionKey = new(paths: ["/id"], kind: "Hash", version: 2);
         JsonSerializer = JsonSerializer.Create(new()
         {
             TypeNameHandling = TypeNameHandling.All,

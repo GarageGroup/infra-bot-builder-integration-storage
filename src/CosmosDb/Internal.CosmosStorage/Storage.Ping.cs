@@ -56,11 +56,10 @@ partial class CosmosStorage
 
         static IEnumerable<StorageContainerPath> GetContainerPathes(string channel)
             =>
-            new StorageContainerPath[]
-            {
+            [
                 new(StorageItemType.UserState, channel),
                 new(StorageItemType.ConversationState, channel)
-            };
+            ];
 
         static int GetIndex((int Index, Failure<Unit>) item)
             =>

@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 
 namespace GarageGroup.Infra.Bot.Builder;
@@ -6,7 +7,7 @@ internal sealed record class StorageContainerJsonWrite
 {
     public StorageContainerJsonWrite(string id, int? defaultTtlSeconds, StoragePartitionKeyJson partitionKey)
     {
-        Id = id ?? string.Empty;
+        Id = id.OrEmpty();
         DefaultTtlSeconds = defaultTtlSeconds;
         PartitionKey = partitionKey;
     }
