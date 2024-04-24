@@ -15,7 +15,7 @@ internal static partial class ItemPathExtensions
 
     static ItemPathExtensions()
     {
-        EscapedSymbols = new[] { '\\', '?', '/', '#', '*' };
+        EscapedSymbols = ['\\', '?', '/', '#', '*'];
         Repleacements = EscapedSymbols.ToDictionary(Pipeline.Pipe, GetReplace);
 
         static string GetReplace(char symbol)

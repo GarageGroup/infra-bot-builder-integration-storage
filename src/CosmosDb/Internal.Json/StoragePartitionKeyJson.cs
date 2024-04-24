@@ -7,8 +7,8 @@ internal sealed record class StoragePartitionKeyJson
 {
     internal StoragePartitionKeyJson(string[] paths, string kind, int version)
     {
-        Paths = paths ?? Array.Empty<string>();
-        Kind = kind ?? string.Empty;
+        Paths = paths ?? [];
+        Kind = kind.OrEmpty();
         Version = version;
     }
 
